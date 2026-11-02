@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="si">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>My Office ULTIMATE V3 - 3 in 1</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Inter;background:#020617;color:#e2e8f0}
+.nav{display:flex;gap:8px;padding:12px;background:rgba(255,255,255,.05);position:sticky;top:0;backdrop-filter:blur(10px);z-index:10;overflow:auto}
+.tab{padding:10px 18px;border-radius:99px;border:1px solid #334155;cursor:pointer;white-space:nowrap;font-weight:700}
+.tab.active{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#000;border-color:gold}
+.card{background:rgba(255,255,255,.97);color:#111;border-radius:16px;padding:18px;margin:14px;box-shadow:0 10px 30px rgba(0,0,0,.4);border-left:5px solid gold}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media(max-width:700px){.grid{grid-template-columns:1fr}}
+.input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;margin:6px 0}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;font-weight:800;cursor:pointer}
+.btn-gold{background:linear-gradient(135deg,#fbbf24,#d97706)} .btn-green{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:800} .red{background:#ef4444;color:#fff} .green{background:#10b981;color:#fff}
+</style></head>
+<body>
+<div class="nav">
+<div class="tab active" onclick="showTab(0)">📊 Dashboard</div>
+<div class="tab" onclick="showTab(1)">💰 ණය එකතු කිරීම</div>
+<div class="tab" onclick="showTab(2)">🛒 Shop POS + Stock</div>
+<div class="tab" onclick="showTab(3)">👑 Owner Hub</div>
+</div>
+
+<div id="t0" class="sec"><div class="card"><h2>ULTIMATE V3 - අද දවස</h2><div class="grid"><div style="background:#fef3c7;padding:14px;border-radius:12px"><b>අද එකතු කිරීම</b><h2 id="todayCol">Rs. 0</h2></div><div style="background:#dcfce7;padding:14px;border-radius:12px"><b>අද විකුණුම්</b><h2 id="todaySale">Rs. 0</h2></div><div style="background:#fee2e2;padding:14px;border-radius:12px"><b>නොගෙවූ ණය</b><h2 id="dueLoan">0</h2></div><div style="background:#e0e7ff;padding:14px;border-radius:12px"><b>Stock Alert</b><h2 id="stockAlert">0</h2></div></div></div><div class="card"><h3>Live Records</h3><div id="liveRec"></div></div></div>
+
+<div id="t1" class="sec" style="display:none"><div class="card"><h3>💰 අලුත් ණය දාන්න + Photo</h3><input id="lcName" class="input" placeholder="නම"><input id="lcPhone" class="input" placeholder="Phone (WhatsApp Reminder යන්නේ මේකට)"><input id="lcAmount" class="input" type="number" placeholder="මුලු ණය මුදල"><input id="lcDaily" class="input" type="number" placeholder="දවසට එකතු කිරීම (ex: 500)"><input id="lcPhoto" class="input" type="file" accept="image/*"><input id="lcLoc" class="input" placeholder="Location / ගම"><button onclick="addLoan()" class="btn btn-gold">Save + Reminder Set කරන්න</button></div><div class="card"><h3>එකතු කිරීමේ ලිස්ට් එක</h3><div id="loanList"></div></div></div>
+
+<div id="t2" class="sec" style="display:none"><div class="grid"><div class="card"><h3>🛒 Bill හදන්න</h3><input id="pName" class="input" placeholder="බඩුව"><input id="pPrice" class="input" type="number" placeholder="මිල"><input id="pStock" class="input" type="number" placeholder="Stock එකේ කීයද තියෙන්නේ"><button onclick="addSale()" class="btn btn-green">Bill Print + QR හදන්න</button><div id="qrBox" style="margin-top:10px;text-align:center"></div></div><div class="card"><h3>Stock බලන්න</h3><div id="stockList"></div></div></div></div>
+
+<div id="t3" class="sec" style="display:none"><div class="card" style="border-left-color:red"><h3>👑 Owner Secret Hub - ඔයාට විතරයි</h3><input id="staffName" class="input" placeholder="Staff නම"><input id="staffSal" class="input" type="number" placeholder="Salary"><button onclick="addStaff()" class="btn" style="background:#1e293b;color:#fff">Staff Add</button><hr><div>Shop Rent: <input id="rent" class="input" type="number" placeholder="මාසේ Rent එක"></div><div>අද ලාබය: <b id="profit">Rs. 0</b></div><div id="ownerData"></div></div></div>
+
+<script>
+let DB=JSON.parse(localStorage.getItem('ultimate_v3')||='{"loans":[],"sales":[],"stock":[],"staff":[]}');
+function showTab(i){document.querySelectorAll('.sec').forEach((s,idx)=>s.style.display=idx===i?'block':'none');document.querySelectorAll('.tab').forEach((t,idx)=>t.classList.toggle('active',idx===i)); render()}
+function addLoan(){let n=lcName.value,p=lcPhone.value,a=lcAmount.value,d=lcDaily.value,l=lcLoc.value; if(!n||!a){alert('නම සහ මුදල දාන්න');return} DB.loans.unshift({id:Date.now(),name:n,phone:p,amount:parseFloat(a),daily:parseFloat(d||0),loc:l,paid:0,date:new Date().toLocaleDateString(),photo:''}); save(); showTab(1); sendWA(p,`ඔයාගේ ණය Rs.${a} Confirm කළා. දවසට Rs.${d} - MyOffice`); alert('ණය Save කළා + WhatsApp යැවුවා!')}
+function addSale(){let n=pName.value,pr=pPrice.value,st=pStock.value; if(!n||!pr)return; DB.sales.unshift({id:Date.now(),name:n,price:parseFloat(pr),date:new Date().toLocaleString()}); let ex=DB.stock.find(s=>s.name===n); if(ex){ex.stock=parseInt(st||ex.stock-1)}else{DB.stock.push({name:n,stock:parseInt(st||10),price:pr})} save(); document.getElementById('qrBox').innerHTML=`<div style="border:2px dashed #333;padding:12px">QR BILL<br><b>${n} - Rs.${pr}</b><br><small>${new Date().toLocaleString()}</small><br><br>https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MyOffice-${n}-${pr}</div>`; let w=window.open('','','width=700,height=700'); w.document.write(`<div style="padding:20px;font-family:sans-serif;border:3px solid gold"><h2>MyOffice POS Bill</h2><p>Item: ${n}</p><p>Price: Rs.${pr}</p><p>Date: ${new Date().toLocaleString()}</p><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MyOffice-${n}-${pr}"><p>Thank You!</p></div><script>window.print()<\/script>`); }
+function addStaff(){DB.staff.push({name:staffName.value,sal:staffSal.value}); save(); render()}
+function save(){localStorage.setItem('ultimate_v3',JSON.stringify(DB)); render()}
+function render(){let tCol=DB.loans.reduce((s,l)=>s+l.paid,0), tSale=DB.sales.reduce((s,v)=>s+v.price,0); document.getElementById('todayCol').innerText='Rs.'+tCol; document.getElementById('todaySale').innerText='Rs.'+tSale; document.getElementById('dueLoan').innerText=DB.loans.filter(l=>l.paid<l.amount).length; document.getElementById('stockAlert').innerText=DB.stock.filter(s=>s.stock<5).length; document.getElementById('liveRec').innerHTML=[...DB.loans,...DB.sales].sort((a,b)=>b.id-a.id).slice(0,8).map(r=>`<div style="padding:8px;border-bottom:1px solid #eee;display:flex;justify-content:space-between"><span>${r.name||r.name} - Rs.${r.amount||r.price}</span><span class="badge ${r.paid<r.amount?'red':'green'}">${r.phone||r.date}</span></div>`).join(''); document.getElementById('loanList').innerHTML=DB.loans.map(l=>`<div style="padding:10px;border:1px solid #eee;border-radius:10px;margin:6px 0;display:flex;justify-content:space-between"><div><b>${l.name}</b> - Rs.${l.amount} <br><small>${l.loc} | ${l.phone} | ගෙවලා: Rs.${l.paid}</small><br><button onclick="collect(${l.id})" style="padding:4px 8px;margin-top:4px">එකතු කළා +${l.daily}</button> <button onclick="remind(${l.id})" style="padding:4px 8px">Reminder යවන්න</button></div><span class="badge ${l.paid>=l.amount?'green':'red'}">${l.paid>=l.amount?'PAID':'DUE'}</span></div>`).join(''); document.getElementById('stockList').innerHTML=DB.stock.map(s=>`<div style="padding:8px;border-bottom:1px solid #eee">${s.name} - Stock: <b style="color:${s.stock<5?'red':'green'}">${s.stock}</b></div>`).join(''); document.getElementById('ownerData').innerHTML=`Staff: ${DB.staff.map(s=>s.name+' Rs.'+s.sal).join(', ')}`; let rentV=parseFloat(document.getElementById('rent')?.value||0); document.getElementById('profit').innerText='Rs.'+(tSale+tCol-rentV-DB.staff.reduce((a,b)=>a+parseFloat(b.sal||0),0));}
+function collect(id){let l=DB.loans.find(x=>x.id===id); l.paid+=l.daily||0; save(); sendWA(l.phone,`Payment Rs.${l.daily} ලැබුණා. ඉතිරි: Rs.${l.amount-l.paid} - MyOffice`)}
+function remind(id){let l=DB.loans.find(x=>x.id===id); sendWA(l.phone,`Reminder: අද Rs.${l.daily} ගෙවන්න තියෙනවා. ඉතිරි: Rs.${l.amount-l.paid} - MyOffice`); alert('Reminder යැවුවා!')}
+function sendWA(phone,msg){if(!phone)return; let wa=`https://wa.me/94${phone.slice(-9)}?text=${encodeURIComponent(msg)}`; window.open(wa,'_blank')}
+render();
+</script>
+</body>
+</html>
